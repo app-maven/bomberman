@@ -1,4 +1,4 @@
-package io.appmaven.bomberman;
+package io.appmaven.bomberman.scenes;
 
 import android.content.res.Resources;
 import android.graphics.Canvas;

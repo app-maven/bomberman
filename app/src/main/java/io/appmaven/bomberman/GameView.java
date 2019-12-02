@@ -6,6 +6,8 @@ import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.SurfaceHolder;
 
+import io.appmaven.bomberman.scenes.SceneManager;
+
 
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 

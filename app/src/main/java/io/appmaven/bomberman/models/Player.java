@@ -98,4 +98,10 @@ public class Player extends CharacterSprite {
 
         timer.scheduleAtFixedRate(timerTask, 1000, 1000); // every 5 seconds.
     }
+
+    public float getDistanceFrom(int x2, int y2) {
+        double x = Math.pow((x2-this.x), 2);
+        double y = Math.pow((y2-this.y), 2);
+        return (float) Math.sqrt(x + y);
+    }
 }
