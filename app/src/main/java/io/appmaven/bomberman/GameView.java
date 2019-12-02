@@ -1,41 +1,28 @@
 package io.appmaven.bomberman;
 
 import android.content.Context;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Shader;
-import android.graphics.drawable.BitmapDrawable;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.SurfaceHolder;
-import android.widget.ImageView;
 
-import io.appmaven.bomberman.sprites.CharacterSprite;
-import io.appmaven.bomberman.sprites.Grid;
 
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     private MainThread thread;
-    private CharacterSprite characterSprite;
-    private Grid grid;
+    private SceneManager manager;
 
 
     public GameView(Context context) {
         super(context);
+        this.thread = new MainThread(getHolder(),this);
+        this.manager = new SceneManager(getResources());
         getHolder().addCallback(this);
-        thread = new MainThread(getHolder(), this);
         setFocusable(true);
-
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        grid = new Grid(BitmapFactory.decodeResource(getResources(), R.drawable.tile));
-        characterSprite = new CharacterSprite(BitmapFactory.decodeResource(getResources(), R.drawable.bad1));
         thread.setRunning(true);
         thread.start();
 
@@ -60,29 +47,20 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-
     public void update() {
-        grid.update();
-        characterSprite.update();
+        this.manager.update();
     }
 
     @Override
     public void draw(Canvas canvas) {
         super.draw(canvas);
-        if(canvas != null) {
-            // canvas.drawColor(Color.WHITE);
-            grid.draw(canvas);
-            characterSprite.draw(canvas);
-        }
+        this.manager.draw(canvas);
+
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_MOVE) {
-            characterSprite.moveTo(event.getX(), event.getY());
-        } else if (event.getAction() == MotionEvent.ACTION_UP) {
-            // add code here if particle behavior changes on finger lift
-        }
+        this.manager.receiveTouch(event);
         return false;
     }
 }

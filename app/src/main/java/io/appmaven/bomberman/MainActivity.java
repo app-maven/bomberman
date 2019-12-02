@@ -5,9 +5,11 @@ import android.os.Bundle;
 import android.view.Window;
 import android.view.WindowManager;
 
+import io.mosaicnetworks.babble.node.BabbleNode;
 import io.mosaicnetworks.babble.node.KeyPair;
 
 public class MainActivity extends Activity {
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -17,7 +19,25 @@ public class MainActivity extends Activity {
 
         setContentView(new GameView(this));
 
-//        KeyPair kp = new KeyPair();
-//        Log.i("Private Key:", kp.privateKey);
+
+
+
+//        BabbleNode babbleNode = new BabbleNode(peersJSON, privateKeyHex, netAddr,
+//                moniker, new BabbleNodeListeners() {
+//            @Override
+//            public void onException(String msg) {
+//                //do something if babble throws an exception
+//            }
+//
+//            @Override
+//            public byte[] onReceiveTransactions(byte[][] transactions) {
+//                //process transactions which have gone through consensus
+//
+//                //return the state hash
+//                return new byte[0];
+//            }
+//        });
+//
+//        babbleNode.run();
     }
 }

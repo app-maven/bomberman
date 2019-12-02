@@ -20,15 +20,17 @@ public class CharacterSprite {
 
     private Bitmap image;
     private int currentFrame = 0;
-    private int width;
-    private int height;
-    private int x, y = 50;
-    private int newX, newY = 50;
+    public int width;
+    public int height;
+    public int x, y;
+    private int newX, newY;
 
     public CharacterSprite(Bitmap bitmap) {
         this.image = bitmap;
         this.width = image.getWidth() / BMP_COLUMNS;
         this.height = image.getHeight() / BMP_ROWS;
+        this.x = this.y = 200;
+        this.newX = this.newY = 200;
     }
 
 
@@ -86,14 +88,18 @@ public class CharacterSprite {
     private int getAnimationRow() {
         int fixX = 1;
         int fixY = 1;
-        if(this.newX < this.x) {
+        if(this.newX <= this.x) {
             fixX = -1;
         }
-        if(this.newY < this.y) {
+        if(this.newY <= this.y) {
             fixY = -1;
         }
         double dirDouble = (Math.atan2(this.xVelocity*fixX, this.yVelocity*fixY) / (Math.PI / 2) + 2);
         int direction = (int) Math.round(dirDouble) % BMP_ROWS;
         return DIRECTION_TO_ANIMATION_MAP[direction];
+    }
+
+    public boolean hasCollided(float x2, float y2) {
+        return x2 > this.x && x2 < this.x + this.width && y2 > this.y && y2 < this.y + this.height;
     }
 }
