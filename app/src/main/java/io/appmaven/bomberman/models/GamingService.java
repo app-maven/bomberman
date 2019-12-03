@@ -1,5 +1,6 @@
 package io.appmaven.bomberman.models;
 
+import io.mosaicnetworks.babble.node.BabbleConfig;
 import io.mosaicnetworks.babble.node.BabbleService;
 import io.mosaicnetworks.babble.node.BabbleTx;
 
@@ -16,7 +17,7 @@ public class GamingService extends BabbleService<AppState> {
     }
 
     private GamingService() {
-        super(new AppState());
+        super(new AppState(), new BabbleConfig.Builder().heartbeat(10).logLevel(BabbleConfig.LogLevel.DEBUG).build());
     }
 
     public static void submit(BabbleTx tx) {
