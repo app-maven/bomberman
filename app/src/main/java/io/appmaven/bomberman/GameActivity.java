@@ -7,15 +7,25 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import io.appmaven.bomberman.models.GamingService;
+import io.mosaicnetworks.babble.discovery.Peer;
+import io.mosaicnetworks.babble.discovery.ResponseListener;
 import io.mosaicnetworks.babble.node.BabbleService;
 import io.mosaicnetworks.babble.node.ServiceObserver;
 import io.mosaicnetworks.babble.utils.Utils;
+import io.mosaicnetworks.babble.discovery.HttpPeerDiscoveryRequest;
 
-public class GameActivity extends Activity implements ServiceObserver {
+public class GameActivity extends Activity implements ServiceObserver, ResponseListener {
 
     private String moniker;
     private int type;
+    private HttpPeerDiscoveryRequest httpGenesisPeerDiscoveryRequest;
+    private HttpPeerDiscoveryRequest httpCurrentPeerDiscoveryRequest;
+    private List<Peer> genesisPeers;
+    private List<Peer> currentPeers;
     private final GamingService gamingService = GamingService.getInstance();
 
 
@@ -55,19 +65,75 @@ public class GameActivity extends Activity implements ServiceObserver {
         }
     }
 
+    private void getPeers(final String peerIP) {
+        try {
+            httpGenesisPeerDiscoveryRequest =
+                    HttpPeerDiscoveryRequest.createGenesisPeersRequest(
+                            peerIP,
+                            GamingService.DEFAULT_DISCOVERY_PORT,
+                            new ResponseListener() {
+                                @Override
+                                public void onReceivePeers(List<Peer> genesisPeers) {
+                                    genesisPeers = genesisPeers;
+
+                                    httpCurrentPeerDiscoveryRequest =
+                                            HttpPeerDiscoveryRequest.createCurrentPeersRequest(
+                                                    peerIP,
+                                                    GamingService.DEFAULT_DISCOVERY_PORT,
+                                                    GameActivity.this,
+                                                    GameActivity.this);
+
+                                    httpCurrentPeerDiscoveryRequest.send();
+                                }
+
+                                @Override
+                                public void onFailure(Error error) {
+                                    GameActivity.this.onFailure(error);
+                                }
+                            }, this);
+        } catch (IllegalArgumentException ex) {
+            return;
+        }
+
+        httpGenesisPeerDiscoveryRequest.send();
+    }
+
+
+    @Override
+    public void onReceivePeers(List<Peer> currentPeers) {
+        this.currentPeers = currentPeers;
+    }
+
+    @Override
+    public void onFailure(io.mosaicnetworks.babble.discovery.ResponseListener.Error error) {
+        int messageId;
+        switch (error) {
+            case INVALID_JSON:
+                messageId = R.string.peers_json_error_alert_message;
+                break;
+            case CONNECTION_ERROR:
+                messageId = R.string.peers_connection_error_alert_message;
+                break;
+            case TIMEOUT:
+                messageId = R.string.peers_timeout_error_alert_message;
+                break;
+            default:
+                messageId = R.string.peers_unknown_error_alert_message;
+        }
+    }
+
     public void join(String moniker) {
-//        this.gamingService.configureJoin(moniker, Utils.getIPAddr(this));
-//        this.gamingService.state.setMoniker(moniker);
-//        this.gamingService.registerObserver(this);
-//        this.gamingService.start();
-//
-//        if (gamingService.getState()!= BabbleService.State.RUNNING_WITH_DISCOVERY) {
-//            Toast.makeText(this, "Unable to advertise peers", Toast.LENGTH_LONG).show();
-//        }
+        String ip = Utils.getIPAddr(this);
+        this.getPeers(ip);
+        this.gamingService.configureJoin(this.genesisPeers, this.currentPeers, moniker, ip);
+        this.gamingService.state.setMoniker(moniker);
+        this.gamingService.registerObserver(this);
+        this.gamingService.start();
     }
 
     @Override
     public void stateUpdated() {
+        // Splash here
 //        final List<Player> newPlayers = gamingService.state.getMessagesFromIndex(mMessageIndex);
 //
 //        runOnUiThread(new Runnable() {
