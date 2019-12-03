@@ -17,7 +17,7 @@ public class GamingService extends BabbleService<AppState> {
     }
 
     private GamingService() {
-        super(new AppState(), new BabbleConfig.Builder().heartbeat(10).logLevel(BabbleConfig.LogLevel.DEBUG).build());
+        super(new AppState(), new BabbleConfig.Builder().heartbeat(1).logLevel(BabbleConfig.LogLevel.DEBUG).build());
     }
 
     public static void submit(BabbleTx tx) {
