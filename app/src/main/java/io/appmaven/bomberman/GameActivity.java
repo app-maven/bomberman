@@ -3,6 +3,7 @@ package io.appmaven.bomberman;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -24,8 +25,8 @@ public class GameActivity extends Activity implements ServiceObserver, ResponseL
     private int type;
     private HttpPeerDiscoveryRequest httpGenesisPeerDiscoveryRequest;
     private HttpPeerDiscoveryRequest httpCurrentPeerDiscoveryRequest;
-    private List<Peer> genesisPeers;
-    private List<Peer> currentPeers;
+    private List<Peer> gPeers;
+    private List<Peer> cPeers;
     private final GamingService gamingService = GamingService.getInstance();
 
 
@@ -65,6 +66,15 @@ public class GameActivity extends Activity implements ServiceObserver, ResponseL
         }
     }
 
+    public void join(String moniker) {
+        String ip = Utils.getIPAddr(this);
+        this.getPeers("192.168.232.2");
+        this.gamingService.configureJoin(this.gPeers, this.cPeers, moniker, ip);
+        this.gamingService.state.setMoniker(moniker);
+        this.gamingService.registerObserver(this);
+        this.gamingService.start();
+    }
+
     private void getPeers(final String peerIP) {
         try {
             httpGenesisPeerDiscoveryRequest =
@@ -74,7 +84,7 @@ public class GameActivity extends Activity implements ServiceObserver, ResponseL
                             new ResponseListener() {
                                 @Override
                                 public void onReceivePeers(List<Peer> genesisPeers) {
-                                    genesisPeers = genesisPeers;
+                                    gPeers = genesisPeers;
 
                                     httpCurrentPeerDiscoveryRequest =
                                             HttpPeerDiscoveryRequest.createCurrentPeersRequest(
@@ -101,7 +111,7 @@ public class GameActivity extends Activity implements ServiceObserver, ResponseL
 
     @Override
     public void onReceivePeers(List<Peer> currentPeers) {
-        this.currentPeers = currentPeers;
+        this.cPeers = currentPeers;
     }
 
     @Override
@@ -120,15 +130,6 @@ public class GameActivity extends Activity implements ServiceObserver, ResponseL
             default:
                 messageId = R.string.peers_unknown_error_alert_message;
         }
-    }
-
-    public void join(String moniker) {
-        String ip = Utils.getIPAddr(this);
-        this.getPeers(Constants.IP);
-        this.gamingService.configureJoin(this.genesisPeers, this.currentPeers, moniker, ip);
-        this.gamingService.state.setMoniker(moniker);
-        this.gamingService.registerObserver(this);
-        this.gamingService.start();
     }
 
     @Override
