@@ -15,9 +15,8 @@ public class Player extends CharacterSprite {
     private int maxHit;
     private String name;
     private Random rnd;
-    private Player target;
     private boolean isAttacking = false;
-    public boolean isDead = false;
+    private boolean isDead = false;
     private int attackTimer = 5;
 
 
@@ -30,7 +29,7 @@ public class Player extends CharacterSprite {
         this.startTick();
     }
 
-    private void takeHit(int hit) {
+    public void takeHit(int hit) {
         if(this.hp > 0 && this.hp > hit) {
             this.hp -= hit;
         } else {
@@ -46,17 +45,12 @@ public class Player extends CharacterSprite {
         Log.i("Player: " + this.name, "Dead: " + this.isDead);
     }
 
-    public void setTarget(Player target) {
-        this.isAttacking = true;
-        this.target = target;
-    }
 
-    public int attack() {
+    public int attack(Player player) {
         if(this.attackTimer <= 0) {
-            if (this.target != null && this.target != this && !this.target.isDead) {
+            if (player != null && player != this && !player.isDead) {
                 int hit = calculateNextHit();
-                this.target.takeHit(hit);
-                this.attackTimer = 2;
+                this.attackTimer = 5;
                 return hit;
             }
         } else {
@@ -103,5 +97,54 @@ public class Player extends CharacterSprite {
         double x = Math.pow((x2-this.x), 2);
         double y = Math.pow((y2-this.y), 2);
         return (float) Math.sqrt(x + y);
+    }
+
+
+    public int getHp() {
+        return hp;
+    }
+
+    public void setHp(int hp) {
+        this.hp = hp;
+    }
+
+    public int getMaxHit() {
+        return maxHit;
+    }
+
+    public void setMaxHit(int maxHit) {
+        this.maxHit = maxHit;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public boolean isAttacking() {
+        return isAttacking;
+    }
+
+    public void setAttacking(boolean attacking) {
+        isAttacking = attacking;
+    }
+
+    public boolean isDead() {
+        return isDead;
+    }
+
+    public void setDead(boolean dead) {
+        isDead = dead;
+    }
+
+    public int getAttackTimer() {
+        return attackTimer;
+    }
+
+    public void setAttackTimer(int attackTimer) {
+        this.attackTimer = attackTimer;
     }
 }

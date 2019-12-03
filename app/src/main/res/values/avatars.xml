@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="avatars">
+        <item>@drawable/bad1</item>
+        <item>@drawable/bad2</item>
+        <item>@drawable/bad3</item>
+        <item>@drawable/bad4</item>
+        <item>@drawable/bad5</item>
+        <item>@drawable/bad6</item>
+        <item>@drawable/good1</item>
+        <item>@drawable/good2</item>
+        <item>@drawable/good3</item>
+        <item>@drawable/good4</item>
+        <item>@drawable/good5</item>
+        <item>@drawable/good6</item>
+    </array>
+</resources>

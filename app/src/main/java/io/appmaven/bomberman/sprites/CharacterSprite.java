@@ -18,7 +18,7 @@ public class CharacterSprite {
     private final int xVelocity = 5;
     private final int yVelocity = 5;
 
-    private Bitmap image;
+    public Bitmap image;
     private int currentFrame = 0;
     public int width;
     public int height;
