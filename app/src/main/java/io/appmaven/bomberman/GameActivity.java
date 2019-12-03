@@ -124,7 +124,7 @@ public class GameActivity extends Activity implements ServiceObserver, ResponseL
 
     public void join(String moniker) {
         String ip = Utils.getIPAddr(this);
-        this.getPeers(ip);
+        this.getPeers(Constants.IP);
         this.gamingService.configureJoin(this.genesisPeers, this.currentPeers, moniker, ip);
         this.gamingService.state.setMoniker(moniker);
         this.gamingService.registerObserver(this);
