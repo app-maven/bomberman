@@ -19,8 +19,6 @@ import io.mosaicnetworks.babble.discovery.HttpPeerDiscoveryRequest;
 
 public class GameActivity extends Activity implements ServiceObserver, ResponseListener {
 
-    private String moniker;
-    private int type;
     private HttpPeerDiscoveryRequest httpGenesisPeerDiscoveryRequest;
     private HttpPeerDiscoveryRequest httpCurrentPeerDiscoveryRequest;
     private List<Peer> gPeers;
@@ -36,16 +34,16 @@ public class GameActivity extends Activity implements ServiceObserver, ResponseL
 
 
         Intent intent = getIntent();
-        this.type = intent.getIntExtra(MainActivity.EXTRA_TYPE, 0);
-        this.moniker = intent.getStringExtra(MainActivity.EXTRA_MONIKER);
+        int type = intent.getIntExtra(MainActivity.EXTRA_TYPE, 0);
+        String moniker = intent.getStringExtra(MainActivity.EXTRA_MONIKER);
 
 
         switch(type) {
             case 0:
-                this.startNew(this.moniker);
+                this.startNew(moniker);
                 break;
             case 1:
-                this.join(this.moniker);
+                this.join(moniker);
                 break;
             default:
         }
@@ -66,7 +64,10 @@ public class GameActivity extends Activity implements ServiceObserver, ResponseL
 
     public void join(String moniker) {
         String ip = Utils.getIPAddr(this);
-        this.getPeers("192.168.232.2");
+
+        // TODO: Remove hardcoded IP
+        this.getPeers(Constants.IP);
+
         this.gamingService.configureJoin(this.gPeers, this.cPeers, moniker, ip);
         this.gamingService.state.setMoniker(moniker);
         this.gamingService.registerObserver(this);
@@ -149,13 +150,13 @@ public class GameActivity extends Activity implements ServiceObserver, ResponseL
 
     @Override
     public void onBackPressed() {
-        gamingService.leave(null);
+        this.gamingService.leave(null);
         super.onBackPressed();
     }
 
     @Override
     protected void onDestroy() {
-        gamingService.removeObserver(this);
+        this.gamingService.removeObserver(this);
         super.onDestroy();
     }
 }

@@ -3,6 +3,7 @@ package io.appmaven.bomberman.models;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.Random;
 import java.util.Timer;
@@ -54,7 +55,7 @@ public class Player extends CharacterSprite {
                 return hit;
             }
         } else {
-            Log.i("You can attack in", "seconds: " + this.attackTimer);
+            // Toast.makeText(null, "You can attack in " + this.attackTimer + " seconds", Toast.LENGTH_LONG).show();
         }
         return -1;
     }
@@ -65,9 +66,7 @@ public class Player extends CharacterSprite {
 
     public boolean isClicked(float x, float y) {
         if(x < this.x + this.width && x >= this.x){
-            if(y < this.y + this.height && y >= this.y) {
-                return true;
-            }
+            return (y < this.y + this.height && y >= this.y);
         }
         return false;
     }

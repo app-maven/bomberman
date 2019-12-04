@@ -57,7 +57,6 @@ public class AppState implements BabbleState {
 
             } catch (JsonSyntaxException e) {
                 //skip any malformed transactions
-                continue;
             }
 
         }

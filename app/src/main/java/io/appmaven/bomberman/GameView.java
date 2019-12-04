@@ -18,7 +18,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     public GameView(Context context) {
         super(context);
         this.thread = new MainThread(getHolder(),this);
-        this.manager = new SceneManager(getResources());
+        this.manager = new SceneManager(context, getResources());
         getHolder().addCallback(this);
         setFocusable(true);
     }
@@ -27,7 +27,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     public void surfaceCreated(SurfaceHolder holder) {
         thread.setRunning(true);
         thread.start();
-
     }
 
     @Override
@@ -57,7 +56,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     public void draw(Canvas canvas) {
         super.draw(canvas);
         this.manager.draw(canvas);
-
     }
 
     @Override
