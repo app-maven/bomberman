@@ -23,7 +23,7 @@ public class CharacterSprite {
     public int width;
     public int height;
     public int x, y;
-    private int newX, newY;
+    public int newX, newY;
 
     public CharacterSprite(Bitmap bitmap) {
         this.image = bitmap;

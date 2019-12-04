@@ -2,14 +2,14 @@ package io.appmaven.bomberman.transactions;
 
 import com.google.gson.Gson;
 
-import io.appmaven.bomberman.models.Player;
+import io.appmaven.bomberman.models.PlayerState;
 import io.mosaicnetworks.babble.node.BabbleTx;
 
 
-public class NewPlayerTx extends GameTx<Player> implements BabbleTx {
+public class NewPlayerTx extends GameTx<PlayerState> implements BabbleTx {
     private final static Gson gson = new Gson();
 
-    public NewPlayerTx(Player player) {
+    public NewPlayerTx(PlayerState player) {
         // set type of transaction
         this.type = Type.NEW_PLAYER;
 

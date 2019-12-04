@@ -8,15 +8,14 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 
 import io.appmaven.bomberman.R;
 import io.appmaven.bomberman.models.GamingService;
 import io.appmaven.bomberman.models.Player;
+import io.appmaven.bomberman.models.PlayerState;
 import io.appmaven.bomberman.sprites.Grid;
 import io.appmaven.bomberman.sprites.TempSprite;
 
@@ -24,16 +23,23 @@ public class GamePlayScene implements Scene {
     private ArrayList<TempSprite> temps = new ArrayList<>();
     private Grid grid;
     private Resources res;
-    private Player player;
     private Context context;
 
     public GamePlayScene(Context context, Resources res) {
         this.context = context;
         this.res = res;
         this.grid = new Grid(BitmapFactory.decodeResource(res, R.drawable.tile));
-        this.player = new Player(getRandomSprite(), GamingService.getInstance().state.getMoniker(), 10, 3);
-        GamingService.addNewPlayer(this.player);
-        GamingService.addNewPlayer(new Player(getRandomSprite(), "Player51", 10, 3));
+
+        PlayerState myPlayerState = new PlayerState(GamingService.getInstance().state.getMoniker(), 200, 200, 10);
+        myPlayerState.setAvatar(getRandomSprite());
+        myPlayerState.setMax(3);
+
+        PlayerState secondPlayerState = new PlayerState("Player511", 300, 200, 10);
+        secondPlayerState.setAvatar(getRandomSprite());
+        secondPlayerState.setMax(3);
+
+        GamingService.addNewPlayer(myPlayerState);
+        GamingService.addNewPlayer(secondPlayerState);
     }
 
     private Bitmap getRandomSprite() {
@@ -52,7 +58,7 @@ public class GamePlayScene implements Scene {
     public void update() {
         grid.update();
 
-        for(Player player : GamingService.getInstance().state.getPlayers().values()) {
+        for(Player player : GamingService.getInstance().state.getLocalPlayers().values()) {
             player.update();
         }
     }
@@ -61,7 +67,7 @@ public class GamePlayScene implements Scene {
     public void draw(Canvas canvas) {
         if(canvas != null) {
             grid.draw(canvas);
-            for(Player player : GamingService.getInstance().state.getPlayers().values()) {
+            for(Player player : GamingService.getInstance().state.getLocalPlayers().values()) {
                 player.draw(canvas);
             }
             for(TempSprite splash : this.temps) {
@@ -78,37 +84,42 @@ public class GamePlayScene implements Scene {
     @Override
     public void receiveTouch(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_MOVE) {
-            for(Player p : GamingService.getInstance().state.getPlayers().values()) {
-                Log.i("Player: ", p.getName() + ": " + p.x + ", " + p.y);
-                if(!p.getName().equalsIgnoreCase(this.player.getName())) {
-                    if(p.isClicked(event.getX(), event.getY())) {
-                        // This will depend on DPI?
-                        Log.i("Checking: ", p.getName() + ": " + p.x + ", " + p.y + " to " + this.player.getName() + ": " + this.player.x + ", " + this.player.y);
-                        Log.i("Distance: ", p.getDistanceFrom(this.player.x, this.player.y) + "");
+            // Fetch my player
+            Player myPlayer = GamingService.getInstance().state.getPlayer();
 
-                        if (p.getDistanceFrom(this.player.x, this.player.y) <= 150) {
-                            int hit = this.player.attack(p);
+            for(Player other : GamingService.getInstance().state.getLocalPlayers().values()) {
+                Log.i("Player: ", other.getName() + ": " + other.x + ", " + other.y);
+                if(!other.getName().equalsIgnoreCase(GamingService.getInstance().state.getPlayer().getName())) {
+                    if(other.isClicked(event.getX(), event.getY())) {
+                        // This will depend on DPI?
+                        Log.i("Checking: ", other.getName() + ": " + other.x + ", " + other.y + " to " + myPlayer.getName() + ": " + myPlayer.x + ", " + myPlayer.y);
+                        Log.i("Distance: ", other.getDistanceFrom(myPlayer.x, myPlayer.y) + "");
+                        Log.i("New X, Y: ", myPlayer.newX + ", " + myPlayer.newY);
+
+                        if (other.getDistanceFrom(myPlayer.x, myPlayer.y) <= 150) {
+                            int hit = myPlayer.attack(other);
 
                             if (hit > 0) {
-                                GamingService.applyDamage(p.getName(), hit);
-                                temps.add(new TempSprite(temps, createSprite(R.drawable.blood3), p.x + p.width / 2, p.y + p.height / 2, hit));
+                                GamingService.applyDamage(other.getName(), hit);
+                                temps.add(new TempSprite(temps, createSprite(R.drawable.blood3), other.x + other.width / 2, other.y + other.height / 2, hit));
                             } else if (hit == 0) {
-                                GamingService.applyDamage(p.getName(), hit);
-                                temps.add(new TempSprite(temps, createSprite(R.drawable.splash3), p.x + p.width / 2, p.y + p.height / 2, hit));
+                                GamingService.applyDamage(other.getName(), hit);
+                                temps.add(new TempSprite(temps, createSprite(R.drawable.splash3), other.x + other.width / 2, other.y + other.height / 2, hit));
                             }
-                            if (p.isDead()) {
-                                GamingService.getInstance().state.getPlayers().remove(p.getName());
+                            if (other.isDead()) {
+                                // Remove from globalPlayers too?
+                                GamingService.getInstance().state.getLocalPlayers().remove(other.getName());
                             }
 
                             return;
                         } else {
-                            // oast.makeText(this.context, "You can't attack from that far.", Toast.LENGTH_LONG).show();
+                            // Toast.makeText(this.context, "You can't attack from that far.", Toast.LENGTH_LONG).show();
                             return;
                         }
                     }
                 }
             }
-            GamingService.movePlayer(this.player.getName(), (int) event.getX(), (int) event.getY());
+            GamingService.movePlayer(myPlayer.getName(), (int) event.getX(), (int) event.getY());
         }
     }
 }

@@ -5,7 +5,6 @@ import io.appmaven.bomberman.transactions.MovePlayerTx;
 import io.appmaven.bomberman.transactions.NewPlayerTx;
 import io.mosaicnetworks.babble.node.BabbleConfig;
 import io.mosaicnetworks.babble.node.BabbleService;
-import io.mosaicnetworks.babble.node.BabbleTx;
 
 
 public class GamingService extends BabbleService<AppState> {
@@ -23,7 +22,7 @@ public class GamingService extends BabbleService<AppState> {
         super(new AppState(), new BabbleConfig.Builder().heartbeat(1).logLevel(BabbleConfig.LogLevel.DEBUG).build());
     }
 
-    public static void addNewPlayer(Player p) {
+    public static void addNewPlayer(PlayerState p) {
         NewPlayerTx tx = new NewPlayerTx(p);
         GamingService.getInstance().submitTx(tx);
     }

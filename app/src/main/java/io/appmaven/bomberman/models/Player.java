@@ -146,4 +146,18 @@ public class Player extends CharacterSprite {
     public void setAttackTimer(int attackTimer) {
         this.attackTimer = attackTimer;
     }
+
+    public PlayerState makeState() {
+        PlayerState state = new PlayerState(this.getName(), this.x, this.y, 10);
+        state.setMax(this.getMaxHit());
+        state.setAvatar(this.image);
+        return state;
+    }
+
+    public static Player makePlayer(PlayerState state) {
+        Player player = new Player(state.getAvatar(), state.getName(), state.getHp(), state.getMax());
+        player.x = state.getX();
+        player.y = state.getY();
+        return player;
+    }
 }
