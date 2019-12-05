@@ -32,13 +32,12 @@ public class GamePlayScene implements Scene {
 
         PlayerState myPlayerState = new PlayerState(GamingService.getInstance().state.getMoniker(), 200, 200, 10);
         myPlayerState.setAvatar(getRandomSprite());
-        myPlayerState.setMax(3);
+        myPlayerState.setMax(10);
+        GamingService.addNewPlayer(myPlayerState);
 
-        PlayerState secondPlayerState = new PlayerState("Player511", 300, 200, 10);
+        PlayerState secondPlayerState = new PlayerState("Player511", 300, 200, 5);
         secondPlayerState.setAvatar(getRandomSprite());
         secondPlayerState.setMax(3);
-
-        GamingService.addNewPlayer(myPlayerState);
         GamingService.addNewPlayer(secondPlayerState);
     }
 
@@ -85,11 +84,11 @@ public class GamePlayScene implements Scene {
     public void receiveTouch(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_MOVE) {
             // Fetch my player
-            Player myPlayer = GamingService.getInstance().state.getPlayer();
+            Player myPlayer = GamingService.getInstance().state.getLocalPlayers().get(GamingService.getInstance().state.getMoniker());
 
             for(Player other : GamingService.getInstance().state.getLocalPlayers().values()) {
                 Log.i("Player: ", other.getName() + ": " + other.x + ", " + other.y);
-                if(!other.getName().equalsIgnoreCase(GamingService.getInstance().state.getPlayer().getName())) {
+                if(!other.getName().equalsIgnoreCase(myPlayer.getName())) {
                     if(other.isClicked(event.getX(), event.getY())) {
                         // This will depend on DPI?
                         Log.i("Checking: ", other.getName() + ": " + other.x + ", " + other.y + " to " + myPlayer.getName() + ": " + myPlayer.x + ", " + myPlayer.y);
@@ -101,16 +100,18 @@ public class GamePlayScene implements Scene {
 
                             if (hit > 0) {
                                 GamingService.applyDamage(other.getName(), hit);
-                                temps.add(new TempSprite(temps, createSprite(R.drawable.blood3), other.x + other.width / 2, other.y + other.height / 2, hit));
+                                if(hit > other.getHp()) {
+                                    hit = other.getHp();
+                                    temps.add(new TempSprite(temps, createSprite(R.drawable.skull), other.x + other.width / 2, other.y + 10, hit));
+                                    // TODO: Submit transaction to remove player
+                                    // GamingService.getInstance().state.getLocalPlayers().remove(other.getName());
+                                } else {
+                                    temps.add(new TempSprite(temps, createSprite(R.drawable.blood3), other.x + other.width / 2, other.y + 5, hit));
+                                }
                             } else if (hit == 0) {
                                 GamingService.applyDamage(other.getName(), hit);
-                                temps.add(new TempSprite(temps, createSprite(R.drawable.splash3), other.x + other.width / 2, other.y + other.height / 2, hit));
+                                temps.add(new TempSprite(temps, createSprite(R.drawable.splash3), other.x + other.width / 2, other.y + 5, hit));
                             }
-                            if (other.isDead()) {
-                                // Remove from globalPlayers too?
-                                GamingService.getInstance().state.getLocalPlayers().remove(other.getName());
-                            }
-
                             return;
                         } else {
                             // Toast.makeText(this.context, "You can't attack from that far.", Toast.LENGTH_LONG).show();

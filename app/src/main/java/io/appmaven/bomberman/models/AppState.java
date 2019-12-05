@@ -1,10 +1,11 @@
 package io.appmaven.bomberman.models;
 
+import android.util.Log;
+
 import com.google.gson.JsonSyntaxException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import io.appmaven.bomberman.transactions.ApplyDamageTx;
@@ -16,7 +17,6 @@ import io.mosaicnetworks.babble.node.BabbleState;
 public class AppState implements BabbleState {
     private Map<String, PlayerState> globalPlayers = new HashMap<>();
     private Map<String, Player> localPlayers = new HashMap<>();
-    private Player player;
     private String moniker;
 
     @Override
@@ -81,10 +81,4 @@ public class AppState implements BabbleState {
         return this.localPlayers;
     }
 
-    public void setPlayer(Player p) {
-        this.player = p;
-    }
-    public Player getPlayer() {
-        return this.player;
-    }
 }

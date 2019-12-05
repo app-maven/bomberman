@@ -2,17 +2,12 @@ package io.appmaven.bomberman;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.res.TypedArray;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -142,6 +137,7 @@ public class GameActivity extends Activity implements ServiceObserver, ResponseL
 
     @Override
     public void stateUpdated() {
+        Log.i("StateUpdated:", "Called!");
         final Map<String, PlayerState> newPlayerStates = gamingService.state.getGlobalPlayers();
 
         runOnUiThread(new Runnable() {
@@ -150,20 +146,21 @@ public class GameActivity extends Activity implements ServiceObserver, ResponseL
                 for(PlayerState state : newPlayerStates.values() ) {
                     try {
                         Player p = GamingService.getInstance().state.getLocalPlayers().get(state.getName());
-                        if (p.getHp() > state.getHp()) {
-                            p.takeHit(p.getHp() - state.getHp());
+                        if(p  == null) {
+                            GamingService.getInstance().state.getLocalPlayers().put(state.getName(), Player.makePlayer(state));
+                        } else {
+                            if (p.getHp() > state.getHp()) {
+                                p.takeHit(p.getHp() - state.getHp());
+                            }
+
+                            if (p.x != state.getX() || p.y != state.getY()) {
+                                Log.i("Move State changed", p.getName() + " From: " + p.x + ":" + p.y + " To: " + state.getX() + ":" + state.getY());
+                                p.moveTo(state.getX(), state.getY());
+                            }
                         }
 
-                        if (p.x != state.getX() || p.y != state.getY()) {
-                            p.moveTo(state.getX(), state.getY());
-                        }
                     } catch (Exception e) {
-                        // Player doesn't exist locally
-                        Player p = Player.makePlayer(state);
-                        if(p.getName().equalsIgnoreCase(GamingService.getInstance().state.getMoniker())) {
-                            GamingService.getInstance().state.setPlayer(p);
-                        }
-                        GamingService.getInstance().state.getLocalPlayers().put(p.getName(), p);
+                        Log.i("Exception:", e.getMessage());
                     }
                 }
             }

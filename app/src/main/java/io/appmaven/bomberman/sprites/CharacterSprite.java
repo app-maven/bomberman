@@ -4,6 +4,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.util.Log;
 
 
 public class CharacterSprite {
@@ -29,8 +30,6 @@ public class CharacterSprite {
         this.image = bitmap;
         this.width = image.getWidth() / BMP_COLUMNS;
         this.height = image.getHeight() / BMP_ROWS;
-        this.x = this.y = 200;
-        this.newX = this.newY = 200;
     }
 
 

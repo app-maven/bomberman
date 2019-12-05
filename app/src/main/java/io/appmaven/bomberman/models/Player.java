@@ -3,7 +3,6 @@ package io.appmaven.bomberman.models;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.util.Random;
 import java.util.Timer;
@@ -11,11 +10,11 @@ import java.util.TimerTask;
 
 import io.appmaven.bomberman.sprites.CharacterSprite;
 
+// TODO: Extend PlayerState?
 public class Player extends CharacterSprite {
     private int hp;
     private int maxHit;
     private String name;
-    private Random rnd;
     private boolean isAttacking = false;
     private boolean isDead = false;
     private int attackTimer = 5;
@@ -26,7 +25,6 @@ public class Player extends CharacterSprite {
         this.name = name;
         this.hp = hp;
         this.maxHit = max;
-        this.rnd = new Random();
         this.startTick();
     }
 
@@ -61,7 +59,8 @@ public class Player extends CharacterSprite {
     }
 
     private int calculateNextHit() {
-        return this.rnd.nextInt(this.maxHit);
+        Random rnd = new Random();
+        return rnd.nextInt(this.maxHit);
     }
 
     public boolean isClicked(float x, float y) {
@@ -147,10 +146,10 @@ public class Player extends CharacterSprite {
         this.attackTimer = attackTimer;
     }
 
-    public PlayerState makeState() {
-        PlayerState state = new PlayerState(this.getName(), this.x, this.y, 10);
-        state.setMax(this.getMaxHit());
-        state.setAvatar(this.image);
+    public static PlayerState makeState(Player p) {
+        PlayerState state = new PlayerState(p.getName(), p.x, p.y, p.getHp());
+        state.setMax(p.getMaxHit());
+        state.setAvatar(p.image);
         return state;
     }
 
@@ -158,6 +157,8 @@ public class Player extends CharacterSprite {
         Player player = new Player(state.getAvatar(), state.getName(), state.getHp(), state.getMax());
         player.x = state.getX();
         player.y = state.getY();
+        player.newX = state.getX();
+        player.newY = state.getY();
         return player;
     }
 }
