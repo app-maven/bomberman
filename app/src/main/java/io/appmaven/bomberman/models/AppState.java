@@ -5,6 +5,7 @@ import android.util.Log;
 import com.google.gson.JsonSyntaxException;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,6 +19,7 @@ public class AppState implements BabbleState {
     private Map<String, PlayerState> globalPlayers = new HashMap<>();
     private Map<String, Player> localPlayers = new HashMap<>();
     private String moniker;
+    private ArrayList<String> notifications = new ArrayList<>();
 
     @Override
     public byte[] applyTransactions(byte[][] transactions) {
@@ -34,7 +36,12 @@ public class AppState implements BabbleState {
                     case APPLY_DAMAGE:
                         ApplyDamageTx tx1 = ApplyDamageTx.fromJson(rawTx);
                         PlayerState ps1 = this.globalPlayers.get(tx1.data.name);
-                        ps1.setHp(ps1.getHp()-tx1.data.hit);
+                        if(ps1.getHp() > tx1.data.hit) {
+                            ps1.setHp(ps1.getHp()-tx1.data.hit);
+                        } else {
+                            ps1.setHp(0);
+                            // this.removeGlobalPlayer(ps1);
+                        }
                         break;
 
                     case MOVE_PLAYER:
@@ -46,7 +53,7 @@ public class AppState implements BabbleState {
 
                     case NEW_PLAYER:
                         NewPlayerTx tx3 = NewPlayerTx.fromJson(rawTx);
-                        this.globalPlayers.put(tx3.data.getName(), tx3.data);
+                        this.addGlobalPlayer(tx3.data);
                         break;
                     default:
                         break;
@@ -79,6 +86,33 @@ public class AppState implements BabbleState {
     }
     public Map<String, Player> getLocalPlayers() {
         return this.localPlayers;
+    }
+
+    public void addGlobalPlayer(PlayerState state) {
+        this.globalPlayers.put(state.getName(), state);
+    }
+
+    public void removeGlobalPlayer(PlayerState state) {
+        this.globalPlayers.remove(state.getName());
+    }
+
+    public void addLocalPlayer(Player p) {
+        this.localPlayers.put(p.getName(), p);
+    }
+
+    public void removeLocalPlayer(Player p) {
+        this.localPlayers.remove(p.getName());
+    }
+
+    public ArrayList<String> getNotifications() {
+        return this.notifications;
+    }
+    public void addNotification(String message) {
+        this.notifications.add(message);
+    }
+
+    public void removeNotification(String message) {
+        this.notifications.remove(message);
     }
 
 }

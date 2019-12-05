@@ -6,8 +6,9 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.util.Log;
+import android.os.Handler;
 import android.view.MotionEvent;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -24,15 +25,17 @@ public class GamePlayScene implements Scene {
     private Grid grid;
     private Resources res;
     private Context context;
+    private Handler handler;
 
     public GamePlayScene(Context context, Resources res) {
         this.context = context;
         this.res = res;
         this.grid = new Grid(BitmapFactory.decodeResource(res, R.drawable.tile));
+        this.handler = new Handler();
 
         PlayerState myPlayerState = new PlayerState(GamingService.getInstance().state.getMoniker(), 200, 200, 10);
         myPlayerState.setAvatar(getRandomSprite());
-        myPlayerState.setMax(10);
+        myPlayerState.setMax(3);
         GamingService.addNewPlayer(myPlayerState);
 
         PlayerState secondPlayerState = new PlayerState("Player511", 300, 200, 5);
@@ -53,6 +56,15 @@ public class GamePlayScene implements Scene {
         return BitmapFactory.decodeResource(this.res, resource);
     }
 
+    // TODO: This bugs out the sprites -> Perhaps something to do with UI threading
+    private void sendNotification(final String notification) {
+        handler.post(new Runnable(){
+            public void run(){
+                Toast.makeText(context, notification, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     @Override
     public void update() {
         grid.update();
@@ -67,7 +79,9 @@ public class GamePlayScene implements Scene {
         if(canvas != null) {
             grid.draw(canvas);
             for(Player player : GamingService.getInstance().state.getLocalPlayers().values()) {
-                player.draw(canvas);
+                if(!player.isDead()) {
+                    player.draw(canvas);
+                }
             }
             for(TempSprite splash : this.temps) {
                 splash.draw(canvas);
@@ -84,37 +98,31 @@ public class GamePlayScene implements Scene {
     public void receiveTouch(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_MOVE) {
             // Fetch my player
-            Player myPlayer = GamingService.getInstance().state.getLocalPlayers().get(GamingService.getInstance().state.getMoniker());
+            final Player myPlayer = GamingService.getInstance().state.getLocalPlayers().get(GamingService.getInstance().state.getMoniker());
 
             for(Player other : GamingService.getInstance().state.getLocalPlayers().values()) {
-                Log.i("Player: ", other.getName() + ": " + other.x + ", " + other.y);
                 if(!other.getName().equalsIgnoreCase(myPlayer.getName())) {
-                    if(other.isClicked(event.getX(), event.getY())) {
-                        // This will depend on DPI?
-                        Log.i("Checking: ", other.getName() + ": " + other.x + ", " + other.y + " to " + myPlayer.getName() + ": " + myPlayer.x + ", " + myPlayer.y);
-                        Log.i("Distance: ", other.getDistanceFrom(myPlayer.x, myPlayer.y) + "");
-                        Log.i("New X, Y: ", myPlayer.newX + ", " + myPlayer.newY);
-
+                    if(other.isClicked(event.getX(), event.getY()) && !other.isDead()) {
                         if (other.getDistanceFrom(myPlayer.x, myPlayer.y) <= 150) {
                             int hit = myPlayer.attack(other);
-
-                            if (hit > 0) {
+                            if(hit < 0) {
+                                // sendNotification("You can attack in " + myPlayer.getAttackTimer() + " seconds.");
+                            } else {
                                 GamingService.applyDamage(other.getName(), hit);
-                                if(hit > other.getHp()) {
-                                    hit = other.getHp();
-                                    temps.add(new TempSprite(temps, createSprite(R.drawable.skull), other.x + other.width / 2, other.y + 10, hit));
-                                    // TODO: Submit transaction to remove player
-                                    // GamingService.getInstance().state.getLocalPlayers().remove(other.getName());
+                                if (hit > 0) {
+                                    if(hit >= other.getHp()) {
+                                        hit = other.getHp();
+                                        temps.add(new TempSprite(temps, createSprite(R.drawable.skull), other.x + other.width / 2, other.y + 10, hit));
+                                    } else {
+                                        temps.add(new TempSprite(temps, createSprite(R.drawable.blood3), other.x + other.width / 2, other.y + 5, hit));
+                                    }
                                 } else {
-                                    temps.add(new TempSprite(temps, createSprite(R.drawable.blood3), other.x + other.width / 2, other.y + 5, hit));
+                                    temps.add(new TempSprite(temps, createSprite(R.drawable.splash3), other.x + other.width / 2, other.y + 5, hit));
                                 }
-                            } else if (hit == 0) {
-                                GamingService.applyDamage(other.getName(), hit);
-                                temps.add(new TempSprite(temps, createSprite(R.drawable.splash3), other.x + other.width / 2, other.y + 5, hit));
                             }
                             return;
                         } else {
-                            // Toast.makeText(this.context, "You can't attack from that far.", Toast.LENGTH_LONG).show();
+                            // sendNotification("You can't attack from that far.");
                             return;
                         }
                     }

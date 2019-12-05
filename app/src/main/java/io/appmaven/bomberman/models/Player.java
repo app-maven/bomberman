@@ -17,7 +17,7 @@ public class Player extends CharacterSprite {
     private String name;
     private boolean isAttacking = false;
     private boolean isDead = false;
-    private int attackTimer = 5;
+    private int attackTimer = 3;
 
 
     public Player(Bitmap image, String name, int hp, int max) {
@@ -39,9 +39,6 @@ public class Player extends CharacterSprite {
             this.isAttacking = false;
             this.isDead = true;
         }
-        Log.i("Player: " + this.name, "Getting hit: " + hit);
-        Log.i("Player: " + this.name, "HP: " + this.hp);
-        Log.i("Player: " + this.name, "Dead: " + this.isDead);
     }
 
 
@@ -49,11 +46,9 @@ public class Player extends CharacterSprite {
         if(this.attackTimer <= 0) {
             if (player != null && player != this && !player.isDead) {
                 int hit = calculateNextHit();
-                this.attackTimer = 5;
+                this.attackTimer = 2;
                 return hit;
             }
-        } else {
-            // Toast.makeText(null, "You can attack in " + this.attackTimer + " seconds", Toast.LENGTH_LONG).show();
         }
         return -1;
     }

@@ -137,7 +137,6 @@ public class GameActivity extends Activity implements ServiceObserver, ResponseL
 
     @Override
     public void stateUpdated() {
-        Log.i("StateUpdated:", "Called!");
         final Map<String, PlayerState> newPlayerStates = gamingService.state.getGlobalPlayers();
 
         runOnUiThread(new Runnable() {
@@ -145,16 +144,15 @@ public class GameActivity extends Activity implements ServiceObserver, ResponseL
             public void run() {
                 for(PlayerState state : newPlayerStates.values() ) {
                     try {
-                        Player p = GamingService.getInstance().state.getLocalPlayers().get(state.getName());
-                        if(p  == null) {
-                            GamingService.getInstance().state.getLocalPlayers().put(state.getName(), Player.makePlayer(state));
+                        Player p = gamingService.state.getLocalPlayers().get(state.getName());
+                        if(p == null) {
+                            gamingService.state.addLocalPlayer(Player.makePlayer(state));
                         } else {
                             if (p.getHp() > state.getHp()) {
                                 p.takeHit(p.getHp() - state.getHp());
                             }
 
                             if (p.x != state.getX() || p.y != state.getY()) {
-                                Log.i("Move State changed", p.getName() + " From: " + p.x + ":" + p.y + " To: " + state.getX() + ":" + state.getY());
                                 p.moveTo(state.getX(), state.getY());
                             }
                         }
