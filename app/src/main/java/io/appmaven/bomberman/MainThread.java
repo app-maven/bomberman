@@ -1,15 +1,20 @@
 package io.appmaven.bomberman;
 
 import android.graphics.Canvas;
+import android.util.Log;
 import android.view.SurfaceHolder;
 
 public class MainThread extends Thread {
-    private static final long targetFPS = 60;
     private double averageFPS;
-    private SurfaceHolder surfaceHolder;
+
+    private static final long targetFPS = 60;
+
+    private final SurfaceHolder surfaceHolder;
     private GameView gameView;
-    private boolean running;
+
     public static Canvas canvas;
+
+    private boolean running;
 
     public MainThread(SurfaceHolder surfaceHolder, GameView gameView) {
         super();
@@ -27,21 +32,26 @@ public class MainThread extends Thread {
         long timeMillis;
         long waitTime;
         long totalTime = 0;
+
         int frameCount = 0;
+
         long targetTime = 1000 / targetFPS;
 
         while(running) {
             startTime = System.nanoTime();
             canvas = null;
+
             try {
                 canvas = this.surfaceHolder.lockCanvas();
+
                 synchronized (surfaceHolder) {
                     this.gameView.update();
                     this.gameView.draw(canvas);
                 }
             } catch (Exception e) {
-
+                Log.e("Error", e.getLocalizedMessage());
             }
+
             finally {
                 if(canvas!=null) {
                     try {

@@ -4,8 +4,6 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.util.Log;
-
 
 public class CharacterSprite {
     // direction = 0 up, 1 left, 2 down, 3 right,
@@ -42,7 +40,6 @@ public class CharacterSprite {
     }
 
     public void update() {
-
         if(this.newX < this.x - xVelocity) {
             this.x -= xVelocity;
             currentFrame = ++currentFrame % BMP_COLUMNS;
@@ -87,12 +84,14 @@ public class CharacterSprite {
     private int getAnimationRow() {
         int fixX = 1;
         int fixY = 1;
+
         if(this.newX <= this.x) {
             fixX = -1;
         }
         if(this.newY <= this.y) {
             fixY = -1;
         }
+
         double dirDouble = (Math.atan2(this.xVelocity*fixX, this.yVelocity*fixY) / (Math.PI / 2) + 2);
         int direction = (int) Math.round(dirDouble) % BMP_ROWS;
         return DIRECTION_TO_ANIMATION_MAP[direction];

@@ -1,4 +1,4 @@
-package io.appmaven.bomberman.transactions;
+package io.appmaven.bomberman.models;
 
 import com.google.gson.annotations.SerializedName;
 

@@ -1,55 +1,84 @@
-package io.appmaven.bomberman.models2;
+package io.appmaven.bomberman.models;
 
 import android.graphics.Bitmap;
 import android.os.Handler;
 
+import java.sql.Array;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import io.appmaven.bomberman.sprites.CharacterSprite;
-import io.appmaven.bomberman.models.PlayerState;
 
-// TODO: Extend PlayerState?
 public class Player extends CharacterSprite {
+    private String name;
+
     private int hp;
     private int maxHit;
-    private String name;
+
     private boolean isAttacking = false;
     private boolean isDead = false;
+
     private int attackTimer = 3;
 
+    // hits
+    private ArrayList<Integer> hits = new ArrayList<>();
 
     public Player(Bitmap image, String name, int hp, int max) {
         super(image);
         this.name = name;
         this.hp = hp;
         this.maxHit = max;
+
+        this.x = 200;
+        this.newX = 200;
+
+        this.y = 200;
+        this.newY = 200;
+
         this.startTick();
     }
 
     public void takeHit(int hit) {
-        if(this.hp > 0 && this.hp > hit) {
-            this.hp -= hit;
-        } else {
-            this.hp = 0;
-        }
-
-        if(this.hp <= 0) {
-            this.isAttacking = false;
-            this.isDead = true;
-        }
+        this.hits.add(hit);
     }
 
+    private void applyDamage() {
+        int totalDmg = 0;
+
+        for(int n : hits) {
+            totalDmg += n;
+        }
+
+        if(this.getHp() > totalDmg) {
+            this.setHp(this.getHp() - totalDmg);
+        } else {
+            this.setHp(0);
+        }
+
+        // clear hits
+        this.hits.clear();
+    }
+
+    @Override
+    public void update() {
+        super.update();
+        this.applyDamage();
+    }
 
     public int attack(Player player) {
         if(this.attackTimer <= 0) {
             if (player != null && player != this && !player.isDead) {
                 int hit = calculateNextHit();
+
                 this.attackTimer = 2;
+
                 return hit;
             }
         }
+
         return -1;
     }
 
@@ -59,9 +88,10 @@ public class Player extends CharacterSprite {
     }
 
     public boolean isClicked(float x, float y) {
-        if(x < this.x + this.width && x >= this.x){
+        if(x < this.x + this.width && x >= this.x) {
             return (y < this.y + this.height && y >= this.y);
         }
+
         return false;
     }
 
@@ -87,8 +117,10 @@ public class Player extends CharacterSprite {
     }
 
     public float getDistanceFrom(int x2, int y2) {
+
         double x = Math.pow((x2-this.x), 2);
         double y = Math.pow((y2-this.y), 2);
+
         return (float) Math.sqrt(x + y);
     }
 
@@ -98,7 +130,11 @@ public class Player extends CharacterSprite {
     }
 
     public void setHp(int hp) {
-        this.hp = hp;
+        if(hp < 0) {
+            this.hp = 0;
+        } else {
+            this.hp = hp;
+        }
     }
 
     public int getMaxHit() {
@@ -141,19 +177,24 @@ public class Player extends CharacterSprite {
         this.attackTimer = attackTimer;
     }
 
-    public static PlayerState makeState(Player p) {
-        PlayerState state = new PlayerState(p.getName(), p.x, p.y, p.getHp());
-        state.setMax(p.getMaxHit());
-        state.setAvatar(p.image);
-        return state;
+    public void setNewPosition(int x, int y) {
+        this.newX = x;
+        this.newY = y;
     }
 
-    public static Player makePlayer(PlayerState state) {
-        Player player = new Player(state.getAvatar(), state.getName(), state.getHp(), state.getMax());
-        player.x = state.getX();
-        player.y = state.getY();
-        player.newX = state.getX();
-        player.newY = state.getY();
-        return player;
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public void setY(int y) {
+        this.y = y;
+    }
+
+    public int getX() {
+        return this.x;
+    }
+
+    public int getY() {
+        return this.y;
     }
 }

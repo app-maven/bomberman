@@ -14,11 +14,12 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private MainThread thread;
     private SceneManager manager;
 
-
     public GameView(Context context) {
         super(context);
+
         this.thread = new MainThread(getHolder(),this);
         this.manager = new SceneManager(context, getResources());
+
         getHolder().addCallback(this);
         setFocusable(true);
     }
@@ -31,12 +32,12 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         boolean retry = true;
+
         while(retry) {
             try {
                 thread.setRunning(false);
@@ -44,6 +45,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
             retry = false;
         }
     }
@@ -55,12 +57,14 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void draw(Canvas canvas) {
         super.draw(canvas);
+
         this.manager.draw(canvas);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         this.manager.receiveTouch(event);
+
         return true;
     }
 }

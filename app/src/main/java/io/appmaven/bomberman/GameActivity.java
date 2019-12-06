@@ -3,32 +3,25 @@ package io.appmaven.bomberman;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 
 import java.util.List;
-import java.util.Map;
 
-import io.appmaven.bomberman.models.GamingService;
-import io.appmaven.bomberman.models.Player;
-import io.appmaven.bomberman.models.PlayerState;
 import io.mosaicnetworks.babble.discovery.Peer;
 import io.mosaicnetworks.babble.discovery.ResponseListener;
 import io.mosaicnetworks.babble.node.BabbleService;
-import io.mosaicnetworks.babble.node.ServiceObserver;
 import io.mosaicnetworks.babble.utils.Utils;
 import io.mosaicnetworks.babble.discovery.HttpPeerDiscoveryRequest;
 
-public class GameActivity extends Activity implements ServiceObserver, ResponseListener {
+import io.appmaven.bomberman.babble.Service;
 
-    private HttpPeerDiscoveryRequest httpGenesisPeerDiscoveryRequest;
+public class GameActivity extends Activity implements ResponseListener {
+
     private HttpPeerDiscoveryRequest httpCurrentPeerDiscoveryRequest;
     private List<Peer> gPeers;
     private List<Peer> cPeers;
-    private final GamingService gamingService = GamingService.getInstance();
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,12 +49,14 @@ public class GameActivity extends Activity implements ServiceObserver, ResponseL
     }
 
     public void startNew(String moniker) {
-        this.gamingService.configureNew(moniker, Utils.getIPAddr(this));
-        this.gamingService.state.setMoniker(moniker);
-        this.gamingService.registerObserver(this);
-        this.gamingService.start();
+        Service.getInstance().configureNew(moniker, Utils.getIPAddr(this));
 
-        if (gamingService.getState()!= BabbleService.State.RUNNING_WITH_DISCOVERY) {
+        Service.getInstance().state.setMoniker(moniker);
+
+        // Start instance
+        Service.getInstance().start();
+
+        if (Service.getInstance().getState() != BabbleService.State.RUNNING_WITH_DISCOVERY) {
             Toast.makeText(this, "Unable to advertise peers", Toast.LENGTH_LONG).show();
         }
     }
@@ -72,18 +67,34 @@ public class GameActivity extends Activity implements ServiceObserver, ResponseL
         // TODO: Remove hardcoded IP
         this.getPeers(Constants.IP);
 
-        this.gamingService.configureJoin(this.gPeers, this.cPeers, moniker, ip);
-        this.gamingService.state.setMoniker(moniker);
-        this.gamingService.registerObserver(this);
-        this.gamingService.start();
+        // Set local moniker
+        Service.getInstance().state.setMoniker(moniker);
+
+        Service.getInstance().configureJoin(this.gPeers, this.cPeers, moniker, ip);
+        Service.getInstance().start();
     }
 
+    @Override
+    public void onBackPressed() {
+        Service.getInstance().leave(null);
+
+        super.onBackPressed();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    // RESPONSE LISTENER
     private void getPeers(final String peerIP) {
+        HttpPeerDiscoveryRequest httpGenesisPeerDiscoveryRequest;
+
         try {
             httpGenesisPeerDiscoveryRequest =
                     HttpPeerDiscoveryRequest.createGenesisPeersRequest(
                             peerIP,
-                            GamingService.DEFAULT_DISCOVERY_PORT,
+                            Service.DEFAULT_DISCOVERY_PORT,
                             new ResponseListener() {
                                 @Override
                                 public void onReceivePeers(List<Peer> genesisPeers) {
@@ -92,7 +103,7 @@ public class GameActivity extends Activity implements ServiceObserver, ResponseL
                                     httpCurrentPeerDiscoveryRequest =
                                             HttpPeerDiscoveryRequest.createCurrentPeersRequest(
                                                     peerIP,
-                                                    GamingService.DEFAULT_DISCOVERY_PORT,
+                                                    Service.DEFAULT_DISCOVERY_PORT,
                                                     GameActivity.this,
                                                     GameActivity.this);
 
@@ -120,6 +131,7 @@ public class GameActivity extends Activity implements ServiceObserver, ResponseL
     @Override
     public void onFailure(io.mosaicnetworks.babble.discovery.ResponseListener.Error error) {
         int messageId;
+
         switch (error) {
             case INVALID_JSON:
                 messageId = R.string.peers_json_error_alert_message;
@@ -133,47 +145,5 @@ public class GameActivity extends Activity implements ServiceObserver, ResponseL
             default:
                 messageId = R.string.peers_unknown_error_alert_message;
         }
-    }
-
-    @Override
-    public void stateUpdated() {
-        final Map<String, PlayerState> newPlayerStates = gamingService.state.getGlobalPlayers();
-
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                for(PlayerState state : newPlayerStates.values() ) {
-                    try {
-                        Player p = gamingService.state.getLocalPlayers().get(state.getName());
-                        if(p == null) {
-                            gamingService.state.addLocalPlayer(Player.makePlayer(state));
-                        } else {
-                            if (p.getHp() > state.getHp()) {
-                                p.takeHit(p.getHp() - state.getHp());
-                            }
-
-                            if (p.x != state.getX() || p.y != state.getY()) {
-                                p.moveTo(state.getX(), state.getY());
-                            }
-                        }
-
-                    } catch (Exception e) {
-                        Log.i("Exception:", e.getMessage());
-                    }
-                }
-            }
-        });
-    }
-
-    @Override
-    public void onBackPressed() {
-        this.gamingService.leave(null);
-        super.onBackPressed();
-    }
-
-    @Override
-    protected void onDestroy() {
-        this.gamingService.removeObserver(this);
-        super.onDestroy();
     }
 }

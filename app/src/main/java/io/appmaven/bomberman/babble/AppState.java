@@ -6,60 +6,60 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.appmaven.bomberman.models.PlayerState;
-import io.appmaven.bomberman.transactions.ApplyDamageTx;
-import io.appmaven.bomberman.transactions.MovePlayerTx;
-import io.appmaven.bomberman.transactions.GameTx;
-import io.appmaven.bomberman.transactions.NewPlayerTx;
 import io.mosaicnetworks.babble.node.BabbleState;
 
-public class State implements BabbleState {
-    private Map<String, PlayerState> players = new HashMap<>();
+import io.appmaven.bomberman.models.Player;
+import io.appmaven.bomberman.babble.transactions.Transaction;
+import io.appmaven.bomberman.babble.transactions.ApplyDamageTx;
+import io.appmaven.bomberman.babble.transactions.MovePlayerTx;
+import io.appmaven.bomberman.babble.transactions.NewPlayerTx;
+
+public class AppState implements BabbleState {
+    private Map<String, Player> players = new HashMap<>();
 
     @Override
     public byte[] applyTransactions(byte[][] transactions) {
 
         for(byte[] transaction : transactions) {
             String rawTx = new String(transaction, StandardCharsets.UTF_8);
-            GameTx gameTx;
 
-            // .data attribute is null
-            gameTx = GameTx.fromJson(rawTx);
+            Transaction tx = Transaction.fromJson(rawTx);;
 
-            switch(gameTx.type) {
+            switch(tx.type) {
                 case APPLY_DAMAGE:
                     ApplyDamageTx dmgTx = ApplyDamageTx.fromJson(rawTx);
-                    PlayerState p = this.players.get(dmgTx.data.name);
+                    Player p = this.players.get(dmgTx.data.name);
+
+                    Log.i("ApplyDmg Received", String.format("%s@(%d)", dmgTx.data.name, dmgTx.data.hit));
 
                     if (p == null) {
                         Log.e("PlayerNotFound", "Cannot find player");
                         break;
                     }
 
-                    if(p.getHp() > dmgTx.data.hit) {
-                        p.setHp(p.getHp() - dmgTx.data.hit);
-                    } else {
-                        p.setHp(0);
-                    }
+                    p.takeHit(dmgTx.data.hit);
 
                     break;
 
                 case MOVE_PLAYER:
                     MovePlayerTx moveTx = MovePlayerTx.fromJson(rawTx);
-                    PlayerState p2 = this.players.get(moveTx.data.name);
+                    Player p2 = this.players.get(moveTx.data.name);
+
+                    Log.i("MovePlayerTx Received", String.format("%s@(%d, %d)", moveTx.data.name, moveTx.data.x, moveTx.data.y));
 
                     if (p2 == null) {
                         Log.e("PlayerNotFound", "Cannot find player");
                         break;
                     }
 
-                    p2.setX(moveTx.data.x);
-                    p2.setY(moveTx.data.y);
+                    p2.setNewPosition(moveTx.data.x, moveTx.data.y);
 
                     break;
 
                 case NEW_PLAYER:
                     NewPlayerTx newPlayerTx = NewPlayerTx.fromJson(rawTx);
+
+                    Log.i("NewPlayerTx Received", String.format("%s@(%d, %d)", newPlayerTx.data.getName(), newPlayerTx.data.x, newPlayerTx.data.y));
 
                     this.addPlayer(newPlayerTx.data);
 
@@ -77,15 +77,25 @@ public class State implements BabbleState {
         // Do reset of state here
     }
 
-    public Map<String, PlayerState> getPlayers() {
+    public Map<String, Player> getPlayers() {
         return this.players;
     }
 
-    private void addPlayer(PlayerState p) {
+    private void addPlayer(Player p) {
         this.players.put(p.getName(), p);
     }
 
-    private void removePlayer(PlayerState p) {
+    private void removePlayer(Player p) {
         this.players.remove(p.getName());
+    }
+
+    // TEMP till localStorage
+    private String moniker = "Player 1";
+
+    public void setMoniker(String name) {
+        this.moniker = name;
+    }
+    public String getMoniker() {
+        return this.moniker;
     }
 }

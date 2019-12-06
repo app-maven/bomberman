@@ -8,10 +8,10 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
 
-
 public class MainActivity extends Activity {
     public static final String EXTRA_TYPE = "io.appmaven.bomberman.TYPE";
     public static final String EXTRA_MONIKER = "io.appmaven.bomberman.MONIKER";
+
     private String moniker = "Player";
 
     @Override
@@ -41,5 +41,4 @@ public class MainActivity extends Activity {
         intent.putExtra(EXTRA_MONIKER, this.moniker);
         startActivity(intent);
     }
-
 }

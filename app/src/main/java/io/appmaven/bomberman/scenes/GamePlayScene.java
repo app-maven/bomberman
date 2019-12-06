@@ -7,25 +7,26 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.os.Handler;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 
-
 import io.appmaven.bomberman.R;
-import io.appmaven.bomberman.models.GamingService;
+import io.appmaven.bomberman.babble.Service;
 import io.appmaven.bomberman.models.Player;
-import io.appmaven.bomberman.models.PlayerState;
 import io.appmaven.bomberman.sprites.Grid;
 import io.appmaven.bomberman.sprites.TempSprite;
 
 public class GamePlayScene implements Scene {
     private ArrayList<TempSprite> temps = new ArrayList<>();
+
     private Grid grid;
     private Resources res;
-    private Context context;
     private Handler handler;
+
+    private Context context;
 
     public GamePlayScene(Context context, Resources res) {
         this.context = context;
@@ -33,22 +34,21 @@ public class GamePlayScene implements Scene {
         this.grid = new Grid(BitmapFactory.decodeResource(res, R.drawable.tile));
         this.handler = new Handler();
 
-        PlayerState myPlayerState = new PlayerState(GamingService.getInstance().state.getMoniker(), 200, 200, 10);
-        myPlayerState.setAvatar(getRandomSprite());
-        myPlayerState.setMax(3);
-        GamingService.addNewPlayer(myPlayerState);
+        Player p1 = new Player(getRandomSprite(), Service.getInstance().state.getMoniker(), 10, 10);
+        Service.addPlayer(p1);
 
-        PlayerState secondPlayerState = new PlayerState("Player511", 300, 200, 5);
-        secondPlayerState.setAvatar(getRandomSprite());
-        secondPlayerState.setMax(3);
-        GamingService.addNewPlayer(secondPlayerState);
+        Player p2 = new Player(getRandomSprite(), "Player 9999", 10, 10);
+        Service.addPlayer(p2);
     }
 
     private Bitmap getRandomSprite() {
         TypedArray images = this.res.obtainTypedArray(R.array.avatars);
+
         int choice = (int) (Math.random() * images.length());
+
         Bitmap image =  BitmapFactory.decodeResource(this.res, images.getResourceId(choice, R.drawable.bad1));
         images.recycle();
+
         return image;
     }
 
@@ -69,7 +69,7 @@ public class GamePlayScene implements Scene {
     public void update() {
         grid.update();
 
-        for(Player player : GamingService.getInstance().state.getLocalPlayers().values()) {
+        for(Player player : Service.getInstance().state.getPlayers().values()) {
             player.update();
         }
     }
@@ -78,7 +78,7 @@ public class GamePlayScene implements Scene {
     public void draw(Canvas canvas) {
         if(canvas != null) {
             grid.draw(canvas);
-            for(Player player : GamingService.getInstance().state.getLocalPlayers().values()) {
+            for(Player player : Service.getInstance().state.getPlayers().values()) {
                 if(!player.isDead()) {
                     player.draw(canvas);
                 }
@@ -98,37 +98,53 @@ public class GamePlayScene implements Scene {
     public void receiveTouch(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_MOVE) {
             // Fetch my player
-            final Player myPlayer = GamingService.getInstance().state.getLocalPlayers().get(GamingService.getInstance().state.getMoniker());
+            final Player p1 = Service.getMyPlayer();
 
-            for(Player other : GamingService.getInstance().state.getLocalPlayers().values()) {
-                if(!other.getName().equalsIgnoreCase(myPlayer.getName())) {
-                    if(other.isClicked(event.getX(), event.getY()) && !other.isDead()) {
-                        if (other.getDistanceFrom(myPlayer.x, myPlayer.y) <= 150) {
-                            int hit = myPlayer.attack(other);
+            for(Player p2 : Service.getInstance().state.getPlayers().values()) {
+                // check if player is not me
+                if(!p2.getName().equalsIgnoreCase(p1.getName())) {
+
+                    // if click another player and hes not dead
+                    if(p2.isClicked(event.getX(), event.getY()) && !p2.isDead()) {
+
+                        // minimum distance required to hit player
+                        if (p2.getDistanceFrom(p1.getX(), p1.getY()) <= 300) {
+                            int hit = p1.attack(p2);
+                            Log.i("Attack", "You attack dealing " + hit + "damage");
+
                             if(hit < 0) {
+                                Log.i("Attack", "You can attack in " + p1.getAttackTimer() + " seconds");
                                 // sendNotification("You can attack in " + myPlayer.getAttackTimer() + " seconds.");
                             } else {
-                                GamingService.applyDamage(other.getName(), hit);
+                                Service.applyDamage(p2.getName(), hit);
+
                                 if (hit > 0) {
-                                    if(hit >= other.getHp()) {
-                                        hit = other.getHp();
-                                        temps.add(new TempSprite(temps, createSprite(R.drawable.skull), other.x + other.width / 2, other.y + 10, hit));
+                                    if(hit >= p2.getHp()) {
+                                        hit = p2.getHp();
+
+                                        temps.add(new TempSprite(temps, createSprite(R.drawable.skull), p2.getX() + p2.width / 2, p2.getY() + 10, hit));
                                     } else {
-                                        temps.add(new TempSprite(temps, createSprite(R.drawable.blood3), other.x + other.width / 2, other.y + 5, hit));
+                                        temps.add(new TempSprite(temps, createSprite(R.drawable.blood3), p2.getX() + p2.width / 2, p2.getY() + 5, hit));
                                     }
                                 } else {
-                                    temps.add(new TempSprite(temps, createSprite(R.drawable.splash3), other.x + other.width / 2, other.y + 5, hit));
+                                    temps.add(new TempSprite(temps, createSprite(R.drawable.splash3), p2.getX() + p2.width / 2, p2.getY() + 5, hit));
                                 }
                             }
+
                             return;
                         } else {
+                            Log.i("Attack", "You can't attack from that far");
                             // sendNotification("You can't attack from that far.");
                             return;
                         }
+
                     }
+
                 }
             }
-            GamingService.movePlayer(myPlayer.getName(), (int) event.getX(), (int) event.getY());
+
+            // move player;
+            Service.movePlayer(p1.getName(), (int) event.getX(), (int) event.getY());
         }
     }
 }
