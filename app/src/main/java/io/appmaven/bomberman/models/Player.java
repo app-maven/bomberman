@@ -1,11 +1,11 @@
 package io.appmaven.bomberman.models;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Handler;
+import android.util.Log;
 
-import java.sql.Array;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -68,15 +68,12 @@ public class Player extends CharacterSprite {
         this.applyDamage();
     }
 
-    public int attack(Player player) {
+    public int getNextHit() {
+        Log.i("getNextHit: ", "Player Attack Timer: " + attackTimer);
         if(this.attackTimer <= 0) {
-            if (player != null && player != this && !player.isDead) {
-                int hit = calculateNextHit();
-
-                this.attackTimer = 2;
-
-                return hit;
-            }
+            int hit = calculateNextHit();
+            this.attackTimer = 2;
+            return hit;
         }
 
         return -1;
@@ -105,15 +102,17 @@ public class Player extends CharacterSprite {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
+
                         if(attackTimer > 0) {
                             attackTimer--;
                         }
+                        Log.i("startTick: ", "Player Attack Timer: " + attackTimer);
                     }
                 });
             }
         };
 
-        timer.scheduleAtFixedRate(timerTask, 1000, 1000); // every 5 seconds.
+        timer.scheduleAtFixedRate(timerTask, 0, 1000);
     }
 
     public float getDistanceFrom(int x2, int y2) {
@@ -178,8 +177,28 @@ public class Player extends CharacterSprite {
     }
 
     public void setNewPosition(int x, int y) {
-        this.newX = x;
-        this.newY = y;
+        final int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
+        final int screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
+
+        this.newX = (int) (x - (float) this.width / 2);
+        this.newY = (int) (y - (float) this.height / 2);
+
+
+        if(this.newX <= (float) this.width / 2){
+            this.newX += (float) this.width / 2;
+        }
+
+        if(this.newX >= screenWidth - this.width) {
+            this.newX -= (float) this.width / 2;
+        }
+
+        if(this.newY <= (float) this.height / 2){
+            this.newY += (float) this.height / 2;
+        }
+
+        if(this.newY >= screenHeight - this.height) {
+            this.newY -= (float) this.height / 2;
+        }
     }
 
     public void setX(int x) {

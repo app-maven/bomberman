@@ -3,6 +3,7 @@ package io.appmaven.bomberman;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -145,5 +146,7 @@ public class GameActivity extends Activity implements ResponseListener {
             default:
                 messageId = R.string.peers_unknown_error_alert_message;
         }
+
+        Log.e("onFailure: ", "" + messageId);
     }
 }

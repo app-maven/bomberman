@@ -8,14 +8,14 @@ public class Tile {
     private Bitmap image;
     private float x, y;
 
-    public Tile(Bitmap bitmap, int x, int y) {
+    Tile(Bitmap bitmap, int x, int y) {
         this.image = bitmap;
         this.x = x;
         this.y = y;
     }
 
 
-    public void draw(Canvas canvas) {
+    void draw(Canvas canvas) {
         canvas.drawBitmap(this.image, this.x, this.y, null);
     }
 

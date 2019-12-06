@@ -28,7 +28,7 @@ public class GamePlayScene implements Scene {
 
     private Context context;
 
-    public GamePlayScene(Context context, Resources res) {
+    GamePlayScene(Context context, Resources res) {
         this.context = context;
         this.res = res;
         this.grid = new Grid(BitmapFactory.decodeResource(res, R.drawable.tile));
@@ -37,7 +37,7 @@ public class GamePlayScene implements Scene {
         Player p1 = new Player(getRandomSprite(), Service.getInstance().state.getMoniker(), 10, 10);
         Service.addPlayer(p1);
 
-        Player p2 = new Player(getRandomSprite(), "Player 9999", 10, 10);
+        Player p2 = new Player(getRandomSprite(), "Player9999", 10, 10);
         Service.addPlayer(p2);
     }
 
@@ -109,12 +109,12 @@ public class GamePlayScene implements Scene {
 
                         // minimum distance required to hit player
                         if (p2.getDistanceFrom(p1.getX(), p1.getY()) <= 300) {
-                            int hit = p1.attack(p2);
-                            Log.i("Attack", "You attack dealing " + hit + "damage");
+                            int hit = p1.getNextHit();
+                            Log.i("Attack", "You attack dealing " + hit + " damage");
 
                             if(hit < 0) {
                                 Log.i("Attack", "You can attack in " + p1.getAttackTimer() + " seconds");
-                                // sendNotification("You can attack in " + myPlayer.getAttackTimer() + " seconds.");
+                                sendNotification("You can attack in " + p1.getAttackTimer() + " seconds.");
                             } else {
                                 Service.applyDamage(p2.getName(), hit);
 
@@ -134,7 +134,7 @@ public class GamePlayScene implements Scene {
                             return;
                         } else {
                             Log.i("Attack", "You can't attack from that far");
-                            // sendNotification("You can't attack from that far.");
+                            sendNotification("You can't attack from that far.");
                             return;
                         }
 

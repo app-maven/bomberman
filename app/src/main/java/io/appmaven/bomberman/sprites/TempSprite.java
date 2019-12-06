@@ -14,15 +14,16 @@ public class TempSprite {
     private float x;
     private float y;
     private Bitmap image;
-    private int life = 15;
+    private int life = 20;
     private List<TempSprite> temps;
-    private final int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-    private final int screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
     private int damage;
 
     public TempSprite(List<TempSprite> temps, Bitmap image, float x, float y, int damage) {
-        this.x = Math.min(Math.max(x - image.getWidth() / 2, 0), screenWidth - image.getWidth());
-        this.y = Math.min(Math.max(y - image.getHeight() / 2, 0), screenHeight - image.getHeight());
+        final int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
+        final int screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
+
+        this.x = Math.min(Math.max(x - (float)image.getWidth() / 2, 0), screenWidth - image.getWidth());
+        this.y = Math.min(Math.max(y - (float)image.getHeight() / 2, 0), screenHeight - image.getHeight());
         this.damage = damage;
         this.image = image;
         this.temps = temps;
@@ -35,7 +36,7 @@ public class TempSprite {
         paint.setTextSize(50); // Text Size
         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OVER)); // Text Overlapping Pattern
         canvas.drawBitmap(this.image, this.x, this.y, paint);
-        canvas.drawText("" + this.damage, this.x + this.image.getWidth()/2, this.y + this.image.getHeight()/2, paint);
+        canvas.drawText("" + this.damage, this.x + (float)this.image.getWidth()/2, this.y + (float)this.image.getHeight()/2, paint);
     }
 
     private void update() {

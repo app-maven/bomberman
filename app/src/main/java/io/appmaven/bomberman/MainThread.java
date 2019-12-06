@@ -7,8 +7,6 @@ import android.view.SurfaceHolder;
 public class MainThread extends Thread {
     private double averageFPS;
 
-    private static final long targetFPS = 60;
-
     private final SurfaceHolder surfaceHolder;
     private GameView gameView;
 
@@ -35,7 +33,7 @@ public class MainThread extends Thread {
 
         int frameCount = 0;
 
-        long targetTime = 1000 / targetFPS;
+        long targetTime = 1000 / Constants.targetFPS;
 
         while(running) {
             startTime = System.nanoTime();
@@ -65,12 +63,16 @@ public class MainThread extends Thread {
             waitTime = targetTime - timeMillis;
 
             try {
-                this.sleep(waitTime);
-            } catch (Exception e) {}
+                if(waitTime > 0) {
+                    sleep(waitTime);
+                }
+            } catch (Exception e) {
+                Log.e("MainThread: ", e.getLocalizedMessage());
+            }
 
             totalTime += System.nanoTime() - startTime;
             frameCount++;
-            if (frameCount == targetFPS)        {
+            if (frameCount == Constants.targetFPS)        {
                 averageFPS = 1000 / ((totalTime / frameCount) / 1000000);
                 frameCount = 0;
                 totalTime = 0;

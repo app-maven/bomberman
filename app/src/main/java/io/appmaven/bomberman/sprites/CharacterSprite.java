@@ -1,6 +1,5 @@
 package io.appmaven.bomberman.sprites;
 
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
@@ -12,12 +11,10 @@ public class CharacterSprite {
     private static final int BMP_ROWS = 4;
     private static final int BMP_COLUMNS = 3;
 
-    private final int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-    private final int screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
     private final int xVelocity = 5;
     private final int yVelocity = 5;
 
-    public Bitmap image;
+    private Bitmap image;
     private int currentFrame = 0;
     public int width;
     public int height;
@@ -57,28 +54,6 @@ public class CharacterSprite {
         }
     }
 
-    public void moveTo(float newX, float newY) {
-        this.newX = (int) (newX - (float) this.width / 2);
-        this.newY = (int) (newY - (float) this.height / 2);
-
-
-        if(this.newX <= (float) width / 2){
-            this.newX += (float) width / 2;
-        }
-
-        if(this.newX >= screenWidth - width) {
-            this.newX -= (float) width / 2;
-        }
-
-        if(this.newY <= (float) height / 2){
-            this.newY += (float) height / 2;
-        }
-
-        if(this.newY >= screenHeight - height) {
-            this.newY -= (float) height / 2;
-        }
-    }
-
     // direction = 0 up, 1 left, 2 down, 3 right,
     // animation = 3 back, 1 left, 0 front, 2 right
     private int getAnimationRow() {
@@ -97,7 +72,7 @@ public class CharacterSprite {
         return DIRECTION_TO_ANIMATION_MAP[direction];
     }
 
-    public boolean hasCollided(float x2, float y2) {
-        return x2 > this.x && x2 < this.x + this.width && y2 > this.y && y2 < this.y + this.height;
-    }
+//    public boolean hasCollided(float x2, float y2) {
+//        return x2 > this.x && x2 < this.x + this.width && y2 > this.y && y2 < this.y + this.height;
+//    }
 }

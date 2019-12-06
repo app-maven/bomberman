@@ -1,5 +1,6 @@
 package io.appmaven.bomberman;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.view.MotionEvent;
@@ -61,6 +62,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         this.manager.draw(canvas);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         this.manager.receiveTouch(event);
