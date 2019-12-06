@@ -1,14 +1,14 @@
-package io.appmaven.bomberman.models;
+package io.appmaven.bomberman.models2;
 
 import android.graphics.Bitmap;
 import android.os.Handler;
-import android.util.Log;
 
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import io.appmaven.bomberman.sprites.CharacterSprite;
+import io.appmaven.bomberman.models.PlayerState;
 
 // TODO: Extend PlayerState?
 public class Player extends CharacterSprite {

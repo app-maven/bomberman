@@ -1,4 +1,4 @@
-package io.appmaven.bomberman.models;
+package io.appmaven.bomberman.transactions;
 
 import android.graphics.Bitmap;
 
